@@ -30,7 +30,7 @@ cli
   .option('--config <config>', 'Config file')
   .option('--depth <depth>', 'Max depth to list dependencies', { default: 8 })
   .option('--base <baseURL>', 'Base URL for deployment', { default: '/' })
-  .option('--outDir <dir>', 'Output directory', { default: '.node-modules-inspector' })
+  .option('--outDir <dir>', 'Output directory', { default: 'dist/__node-modules-inspector' })
   .action(async (options) => {
     console.log(c.cyan`${MARK_NODE} Building static Node Modules Inspector...`)
 
@@ -52,7 +52,7 @@ cli
     const ctx = await createHostContext({
       cwd,
       mode: 'build',
-      host: createH3DevToolsHost({ origin: 'http://localhost' }),
+      host: createH3DevToolsHost({ origin: 'http://localhost', appName: devtool.id }),
     })
     await devtool.setup(ctx, {
       flags: {
@@ -97,6 +97,12 @@ cli
         const content = await fs.readFile(filePath, 'utf-8')
         const newContent = content
           .replaceAll(/\s(href|src)="\//g, ` $1="${baseURL}`)
+          // Nuxt's <script type="importmap"> entries and buildAssetsDir live in
+          // JSON / object literals — quoted absolute /_nuxt/* paths the
+          // attribute regex above doesn't reach. Without this the importmap
+          // points the entry chunk at /_nuxt/* under the deploy origin and the
+          // SPA fails to hydrate at the sub-base.
+          .replaceAll('"/_nuxt/', `"${baseURL}_nuxt/`)
           .replaceAll('baseURL:"/"', `baseURL:"${baseURL}"`)
         await fs.writeFile(filePath, newContent, 'utf-8')
       }
@@ -136,7 +142,7 @@ cli
     })
 
     // Warm the payload; rpcGroup.functions is a Proxy returning Promise<handler>.
-    const handlers = server.rpcGroup.functions as Record<string, Promise<(...args: unknown[]) => unknown> | undefined>
+    const handlers = server.rpcGroup.functions as unknown as Record<string, Promise<(...args: unknown[]) => unknown> | undefined>
     handlers['nmi:get-payload']?.then(fn => fn?.()).catch(() => {})
   })
 
