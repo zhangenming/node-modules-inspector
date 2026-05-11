@@ -147,5 +147,33 @@ cli
     handlers['nmi:get-payload']?.then(fn => fn?.()).catch(() => {})
   })
 
+cli
+  .command('check', 'Run analysis and config hook without starting the server (for CI/CD)')
+  .option('--root <dir>', 'Root directory', { default: process.cwd() })
+  .option('--config <file>', 'Config file')
+  .option('--depth <depth>', 'Max depth to list dependencies', { default: 8 })
+  .action(async (options) => {
+    const { createInspectorRpcHandlers } = await import('./rpc/handlers')
+    const { storageNpmMeta, storageNpmMetaLatest, storagePublint } = await import('./storage')
+
+    const handlers = createInspectorRpcHandlers({
+      cwd: options.root,
+      depth: Number(options.depth),
+      configFile: options.config,
+      mode: 'build',
+      storageNpmMeta,
+      storageNpmMetaLatest,
+      storagePublint,
+    })
+
+    try {
+      await handlers.getPayload()
+    }
+    catch (error: any) {
+      console.error(c.red`✖ ${error.message || error}`)
+      process.exit(1)
+    }
+  })
+
 cli.help()
 cli.parse()

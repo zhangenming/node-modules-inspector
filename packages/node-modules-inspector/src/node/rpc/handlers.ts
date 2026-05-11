@@ -190,12 +190,18 @@ export function createInspectorRpcHandlers(options: CreateInspectorRpcHandlersOp
 
     console.log(c.green`${MARK_CHECK} node_modules read finished`)
 
-    return {
+    const payload: NodeModulesInspectorPayload = {
       hash,
       timestamp: Date.now(),
       ...result,
       config,
     }
+    if (config.onPayloadReady) {
+      console.log(c.cyan`${MARK_NODE} Running config hook...`)
+      await config.onPayloadReady(payload)
+      console.log(c.green`${MARK_CHECK} Config hook finished`)
+    }
+    return payload
   }
 
   return {
