@@ -1,4 +1,4 @@
-import { defineDevtool } from 'devframe/types'
+import { defineDevframe } from 'devframe/types'
 import { distDir } from '../dirs'
 import { getPackagesNpmMetaRpc } from './rpc/get-packages-npm-meta'
 import { getPackagesNpmMetaLatestRpc } from './rpc/get-packages-npm-meta-latest'
@@ -9,13 +9,13 @@ import { openInEditorRpc } from './rpc/open-in-editor'
 import { openInFinderRpc } from './rpc/open-in-finder'
 import { storageNpmMeta, storageNpmMetaLatest, storagePublint } from './storage'
 
-export interface InspectorDevtoolFlags {
+export interface InspectorDevframeFlags {
   root?: string
   config?: string
   depth?: number
 }
 
-export default defineDevtool({
+export default defineDevframe({
   id: 'node-modules-inspector',
   name: 'Node Modules Inspector',
   icon: 'ph:package-duotone',
@@ -24,7 +24,7 @@ export default defineDevtool({
     distDir,
   },
   setup(ctx, info) {
-    const flags = (info?.flags ?? {}) as InspectorDevtoolFlags
+    const flags = (info?.flags ?? {}) as InspectorDevframeFlags
     const handlers = createInspectorRpcHandlers({
       cwd: flags.root ?? ctx.cwd,
       depth: flags.depth ?? 8,

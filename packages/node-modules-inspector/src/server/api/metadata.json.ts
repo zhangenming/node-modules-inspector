@@ -2,21 +2,21 @@ import process from 'node:process'
 import { consola } from 'consola'
 import { createH3DevToolsHost, createHostContext, startHttpAndWs } from 'devframe/node'
 import { getPort } from 'get-port-please'
-import devtool from '../../node/devtool'
+import devframe from '../../node/devframe'
 
 consola.restoreAll()
 
 let _serverPromise: Promise<{ port: number, jsonSerializableMethods: string[] }> | null = null
 
-async function bootDevtoolServer() {
+async function bootDevframeServer() {
   const port = await getPort({ port: 7812, random: true })
 
   const ctx = await createHostContext({
     cwd: process.cwd(),
     mode: 'dev',
-    host: createH3DevToolsHost({ origin: `http://localhost:${port}`, appName: devtool.id }),
+    host: createH3DevToolsHost({ origin: `http://localhost:${port}`, appName: devframe.id }),
   })
-  await devtool.setup(ctx, { flags: {} })
+  await devframe.setup(ctx, { flags: {} })
 
   await startHttpAndWs({
     context: ctx,
@@ -42,7 +42,7 @@ async function bootDevtoolServer() {
 
 function getServer() {
   if (!_serverPromise)
-    _serverPromise = bootDevtoolServer()
+    _serverPromise = bootDevframeServer()
   return _serverPromise
 }
 

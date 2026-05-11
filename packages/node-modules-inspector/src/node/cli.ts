@@ -15,12 +15,13 @@ import {
   createH3DevToolsHost,
   createHostContext,
 } from 'devframe/node'
-import { strictJsonStringify, structuredCloneStringify } from 'devframe/rpc'
+import { strictJsonStringify } from 'devframe/rpc'
+import { structuredCloneStringify } from 'devframe/utils/structured-clone'
 import { dirname, relative, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { distDir } from '../dirs'
 import { MARK_CHECK, MARK_NODE } from './constants'
-import devtool from './devtool'
+import devframe from './devframe'
 
 const cli = cac('node-modules-inspector')
 
@@ -52,9 +53,9 @@ cli
     const ctx = await createHostContext({
       cwd,
       mode: 'build',
-      host: createH3DevToolsHost({ origin: 'http://localhost', appName: devtool.id }),
+      host: createH3DevToolsHost({ origin: 'http://localhost', appName: devframe.id }),
     })
-    await devtool.setup(ctx, {
+    await devframe.setup(ctx, {
       flags: {
         root: cwd,
         config: options.config,
@@ -122,7 +123,7 @@ cli
   .option('--open', 'Open browser', { default: true })
   .action(async (options) => {
     const host = options.host
-    const port = await resolveDevServerPort(devtool, {
+    const port = await resolveDevServerPort(devframe, {
       host,
       defaultPort: Number(options.port),
     })
@@ -130,7 +131,7 @@ cli
 
     console.log(c.green`${MARK_NODE} Starting Node Modules Inspector at`, c.green(url), '\n')
 
-    const server = await createDevServer(devtool, {
+    const server = await createDevServer(devframe, {
       host,
       port,
       flags: {

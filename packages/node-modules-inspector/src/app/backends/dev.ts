@@ -1,6 +1,6 @@
 import type { ConnectionMeta } from 'devframe/types'
 import type { Backend } from '../types/backend'
-import { connectDevtool } from 'devframe/client'
+import { connectDevframe } from 'devframe/client'
 import { ref, shallowRef } from 'vue'
 import { useRuntimeConfig } from '#app/nuxt'
 
@@ -11,7 +11,7 @@ export async function createDevBackend(): Promise<Backend> {
   // In Nuxt dev (`nuxi dev`) the SPA is served on Nitro's port; the devframe
   // server runs on a separate port discovered via /api/metadata.json. In the
   // production CLI / static build the connection meta is at ./__connection.json
-  // and `connectDevtool` finds it via the relative baseURL.
+  // and `connectDevframe` finds it via the relative baseURL.
   let connectionMeta: ConnectionMeta | undefined
   if (import.meta.env.DEV) {
     try {
@@ -25,7 +25,7 @@ export async function createDevBackend(): Promise<Backend> {
   const status: Backend['status'] = ref('connecting')
   const connectionError = shallowRef<unknown | undefined>(undefined)
 
-  const rpc = await connectDevtool({ baseURL, connectionMeta })
+  const rpc = await connectDevframe({ baseURL, connectionMeta })
   status.value = 'connected'
 
   const isWebsocket = rpc.connectionMeta.backend === 'websocket'
